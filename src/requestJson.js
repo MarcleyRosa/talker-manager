@@ -14,12 +14,12 @@ const newRegistration = (email, password) => {
     const newObj = {
         email,
         password,
-    }
+    };
     const newPerson = JSON.stringify(newObj);
     return newPerson;
-}
+};
 
 module.exports = {
 requestTalker,
 newRegistration,
-}
+};

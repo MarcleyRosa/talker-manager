@@ -1,12 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const crypto = require('crypto');
 const requestTalker = require('./requestJson');
 
 const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
-
-const crypto = require('crypto');
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
@@ -40,8 +39,7 @@ app.get('/talker/:id', async (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-
   const token = crypto.randomBytes(8).toString('hex');
 
   return res.status(HTTP_OK_STATUS).json({ token });
-})
+});
