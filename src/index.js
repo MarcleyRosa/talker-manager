@@ -3,7 +3,10 @@ const bodyParser = require('body-parser');
 const requestTalker = require('./requestJson');
 
 const app = express();
+app.use(express.json());
 app.use(bodyParser.json());
+
+const crypto = require('crypto');
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
@@ -35,3 +38,10 @@ app.get('/talker/:id', async (req, res) => {
     return res.status(404).send({ message: 'Pessoa palestrante não encontrada' });
   }
 });
+
+app.post('/login', (req, res) => {
+
+  const token = crypto.randomBytes(8).toString('hex');
+
+  return res.status(HTTP_OK_STATUS).json({ token });
+})
