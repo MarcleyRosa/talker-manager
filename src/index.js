@@ -28,10 +28,10 @@ app.get('/talker/:id', async (req, res) => {
   const talker = await requestTalker();
   const { id } = req.params;
   try {
-  const person = talker.filter((pers) => pers.id === Number(id) )
-  if (!person[0]) throw new Error('Pessoa palestrante não encontrada')
+  const person = talker.filter((pers) => pers.id === Number(id));
+  if (!person[0]) throw new Error('Pessoa palestrante não encontrada');
   return res.status(200).json(person[0]);
   } catch (error) {
-    return res.status(404).send({ message: 'Pessoa palestrante não encontrada'})
+    return res.status(404).send({ message: 'Pessoa palestrante não encontrada' });
   }
-})
+});
