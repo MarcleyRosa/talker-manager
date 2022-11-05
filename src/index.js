@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
-const { requestTalker } = require('./requestJson');
+const { requestTalker, validation, tokenValidate, personValidate,
+   talkValidate, newTalker, rateAndDateValidate } = require('./requestJson');
 
 const app = express();
 app.use(express.json());
@@ -18,25 +19,6 @@ app.get('/', (_request, response) => {
 app.listen(PORT, () => {
   console.log('Online');
 });
-
-const validation = (req, res, next) => {
-  const { email, password } = req.body;
-  const regex = /^\S+@\S+\.\S+$/;
-  const validEmail = regex.test(email);
-  if (email === undefined) {
-   return res.status(400).json({ message: 'O campo "email" é obrigatório' });
-  }
-  if (password === undefined) {
-    return res.status(400).json({ message: 'O campo "password" é obrigatório' });
-  }
-  if (password.length < 6) {
-    return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
-  }
-  if (!validEmail) {
-    return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
-  }
-  return next();
-};
 
 app.get('/talker', async (_req, res) => {
   const talker = await requestTalker();
@@ -56,8 +38,44 @@ app.get('/talker/:id', async (req, res) => {
   }
 });
 
-app.post('/login', validation, (req, res) => {
+app.post('/login', validation, (_req, res) => {
   const token = crypto.randomBytes(8).toString('hex');
 
+  res.header({ authorization: token });
   return res.status(HTTP_OK_STATUS).json({ token });
+});
+
+app.post('/talker', tokenValidate, personValidate, talkValidate,
+ rateAndDateValidate, async (req, res) => {
+  const { name, age, talk: { watchedAt, rate } } = req.body;
+  const talker = await requestTalker();
+  const newId = talker[talker.length - 1].id + 1;
+
+  const newPerson = {
+      id: newId,
+      name,
+      age,
+      talk: {
+        watchedAt,
+        rate,
+      },
+  };
+  const test = [...talker, newPerson];
+  const fist = talker.filter((e) => e.id === newId);
+  await newTalker(test);
+  console.log(fist);
+  res.status(201).json(newPerson);
+});
+
+app.put('/talker/:id', tokenValidate, personValidate, talkValidate,
+ rateAndDateValidate, async (req, res) => {
+  const { id } = req.params;
+  const { name, age, talk } = req.body;
+  const talker = await requestTalker();
+
+  talker[Number(id) - 1].name = name;
+  talker[Number(id) - 1].age = age;
+  talker[Number(id) - 1].talk = talk;
+  console.log(talker);
+  return res.status(HTTP_OK_STATUS).json(talker);
 });
