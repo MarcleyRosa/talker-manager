@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
-const { requestTalker, validation, tokenValidate, personValidate,
-   talkValidate, newTalker, rateAndDateValidate } = require('./requestJson');
+const { requestReadJson, validation, tokenValidate, personValidate,
+   talkValidate, writeJson, rateAndDateValidate } = require('./requestJson');
 
 const app = express();
 app.use(express.json());
@@ -21,13 +21,13 @@ app.listen(PORT, () => {
 });
 
 app.get('/talker', async (_req, res) => {
-  const talker = await requestTalker();
+  const talker = await requestReadJson();
 
   return res.status(HTTP_OK_STATUS).json(talker);
 });
 
 app.get('/talker/:id', async (req, res) => {
-  const talker = await requestTalker();
+  const talker = await requestReadJson();
   const { id } = req.params;
   try {
   const person = talker.filter((pers) => pers.id === Number(id));
@@ -48,7 +48,7 @@ app.post('/login', validation, (_req, res) => {
 app.post('/talker', tokenValidate, personValidate, talkValidate,
  rateAndDateValidate, async (req, res) => {
   const { name, age, talk: { watchedAt, rate } } = req.body;
-  const talker = await requestTalker();
+  const talker = await requestReadJson();
   const newId = talker[talker.length - 1].id + 1;
 
   const newPerson = {
@@ -60,10 +60,8 @@ app.post('/talker', tokenValidate, personValidate, talkValidate,
         rate,
       },
   };
-  const test = [...talker, newPerson];
-  const fist = talker.filter((e) => e.id === newId);
-  await newTalker(test);
-  console.log(fist);
+  const postAllTalker = [...talker, newPerson];
+  await writeJson(postAllTalker);
   res.status(201).json(newPerson);
 });
 
@@ -71,11 +69,12 @@ app.put('/talker/:id', tokenValidate, personValidate, talkValidate,
  rateAndDateValidate, async (req, res) => {
   const { id } = req.params;
   const { name, age, talk } = req.body;
-  const talker = await requestTalker();
+  const talker = await requestReadJson();
 
+  talker[Number(id) - 1].id = Number(id);
   talker[Number(id) - 1].name = name;
   talker[Number(id) - 1].age = age;
   talker[Number(id) - 1].talk = talk;
-  console.log(talker);
-  return res.status(HTTP_OK_STATUS).json(talker);
+  await writeJson(talker);
+  return res.status(HTTP_OK_STATUS).json(talker[Number(id) - 1]);
 });

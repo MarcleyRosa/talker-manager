@@ -3,16 +3,15 @@ const path = require('path');
 
 const route = path.resolve(__dirname, './talker.json');
 
-const requestTalker = async () => {
+const requestReadJson = async () => {
     const response = await fs.readFile(route, 'utf-8');
     const responseParse = JSON.parse(response);
 
     return responseParse;
 };
 
-const newTalker = async (newPerson) => {
-    const response = await fs.writeFile('./talker.json', JSON.stringify(newPerson));
-    return response;
+const writeJson = async (newPerson) => {
+  await fs.writeFile(route, JSON.stringify(newPerson));
 };
 
 const validation = (req, res, next) => {
@@ -53,14 +52,13 @@ const tokenValidate = (req, res, next) => {
 const personValidate = (req, res, next) => {
     const { name, age } = req.body;
     const response = (message) => res.status(400).send({ message });
+  
+        if (!name) return response('O campo "name" é obrigatório');
+        if (name.length < 3) return response('O "name" deve ter pelo menos 3 caracteres');
+        if (!age) return response('O campo "age" é obrigatório');
+        if (age < 18) return response('A pessoa palestrante deve ser maior de idade');
 
-    switch (true) {
-        case (!name): return response('O campo "name" é obrigatório');
-        case (name.length < 3): return response('O "name" deve ter pelo menos 3 caracteres');
-        case (!age): return response('O campo "age" é obrigatório');
-        case (age < 18): return response('A pessoa palestrante deve ser maior de idade');
-        default: next();
-    }
+        return next();
 };
 
 const talkValidate = (req, res, next) => {
@@ -74,14 +72,14 @@ const talkValidate = (req, res, next) => {
     // validate(watchedAt, 'O campo "watchedAt" é obrigatório');
     // validate(validDate, 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
     // validate(rateValid, 'O campo "rate" deve ser um inteiro de 1 à 5');
-    if (!rate) return response('O campo "rate" é obrigatório');
+    if (rate === undefined) return response('O campo "rate" é obrigatório');
     if (!watchedAt) return response('O campo "watchedAt" é obrigatório');
     return next();
 };
 
 const rateAndDateValidate = (req, res, next) => {
   const { talk: { watchedAt, rate } } = req.body;
-  const regexTalk = /^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/;
+  const regexTalk = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
   const validDate = regexTalk.test(watchedAt);
   const response = (message) => res.status(400).send({ message });
   const rateValid = rate >= 1 && rate <= 5;
@@ -93,11 +91,11 @@ const rateAndDateValidate = (req, res, next) => {
 };
 
 module.exports = {
-requestTalker,
+requestReadJson,
 tokenValidate,
 validation,
 personValidate,
 talkValidate,
-newTalker,
+writeJson,
 rateAndDateValidate,
 };
