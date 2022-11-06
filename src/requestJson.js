@@ -11,7 +11,7 @@ const requestReadJson = async () => {
 };
 
 const writeJson = async (newPerson) => {
-  await fs.writeFile(route, JSON.stringify(newPerson));
+  await fs.writeFile(route, JSON.stringify(newPerson, null, 2));
 };
 
 const validation = (req, res, next) => {
@@ -34,36 +34,34 @@ const validation = (req, res, next) => {
   };
 
 const tokenValidate = (req, res, next) => {
-   const response = (message) => res.status(400).send({ message });
+  //  const response = (message) => res.status(400).send({ message });
    const { headers: { authorization } } = req;
-   const { talk } = req.body;
    if (!authorization) {
     return res.status(401).send({ message: 'Token não encontrado' });
    }
    if (authorization.length < 16 && authorization !== String) {
     return res.status(401).send({ message: 'Token inválido' });
    }
-   if (!talk) {
-    return response('O campo "talk" é obrigatório');
-   }
    next();
 };
 
 const personValidate = (req, res, next) => {
-    const { name, age } = req.body;
-    const response = (message) => res.status(400).send({ message });
+  const { name, age } = req.body;
+  const response = (message) => res.status(400).send({ message });
   
-        if (!name) return response('O campo "name" é obrigatório');
-        if (name.length < 3) return response('O "name" deve ter pelo menos 3 caracteres');
-        if (!age) return response('O campo "age" é obrigatório');
-        if (age < 18) return response('A pessoa palestrante deve ser maior de idade');
-
-        return next();
+  if (!name) return response('O campo "name" é obrigatório');
+  if (name.length < 3) return response('O "name" deve ter pelo menos 3 caracteres');
+  if (!age) return response('O campo "age" é obrigatório');
+  if (age < 18) return response('A pessoa palestrante deve ser maior de idade');
+        
+  return next();
 };
 
-const talkValidate = (req, res, next) => {
-    const { talk: { watchedAt, rate } } = req.body;
+const watchedAtValidate = (req, res, next) => {
+    const { talk: { watchedAt } } = req.body;
     const response = (message) => res.status(400).send({ message });
+    const regexTalk = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
+    const validDate = regexTalk.test(watchedAt);
     // const validate = (key, message) => {
     //     if (!key) return response(message);
     //     console.log(key);
@@ -72,21 +70,26 @@ const talkValidate = (req, res, next) => {
     // validate(watchedAt, 'O campo "watchedAt" é obrigatório');
     // validate(validDate, 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
     // validate(rateValid, 'O campo "rate" deve ser um inteiro de 1 à 5');
-    if (rate === undefined) return response('O campo "rate" é obrigatório');
     if (!watchedAt) return response('O campo "watchedAt" é obrigatório');
+    if (!validDate) return response('O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
     return next();
 };
 
-const rateAndDateValidate = (req, res, next) => {
-  const { talk: { watchedAt, rate } } = req.body;
-  const regexTalk = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
-  const validDate = regexTalk.test(watchedAt);
+const rateValidate = (req, res, next) => {
+  const { talk } = req.body;
   const response = (message) => res.status(400).send({ message });
-  const rateValid = rate >= 1 && rate <= 5;
-  const isNumber = Number.isInteger(rate);
-
-  if (!validDate) return response('O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
+  const rateValid = talk.rate >= 1 && talk.rate <= 5;
+  const isNumber = Number.isInteger(talk.rate);
+  
+  if (talk.rate === undefined) return response('O campo "rate" é obrigatório');
   if (!rateValid || !isNumber) return response('O campo "rate" deve ser um inteiro de 1 à 5');
+  return next();
+};
+
+const talkValidate = (req, res, next) => {
+  const { talk } = req.body;
+  const response = (message) => res.status(400).send({ message });
+  if (!talk) return response('O campo "talk" é obrigatório');
   return next();
 };
 
@@ -95,7 +98,8 @@ requestReadJson,
 tokenValidate,
 validation,
 personValidate,
-talkValidate,
+watchedAtValidate,
 writeJson,
-rateAndDateValidate,
+rateValidate,
+talkValidate,
 };

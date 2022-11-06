@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const { requestReadJson, validation, tokenValidate, personValidate,
-   talkValidate, writeJson, rateAndDateValidate } = require('./requestJson');
+   watchedAtValidate, writeJson, rateValidate, talkValidate } = require('./requestJson');
 
 const app = express();
 app.use(express.json());
@@ -45,8 +45,8 @@ app.post('/login', validation, (_req, res) => {
   return res.status(HTTP_OK_STATUS).json({ token });
 });
 
-app.post('/talker', tokenValidate, personValidate, talkValidate,
- rateAndDateValidate, async (req, res) => {
+app.post('/talker', tokenValidate, personValidate, talkValidate, watchedAtValidate,
+ rateValidate, async (req, res) => {
   const { name, age, talk: { watchedAt, rate } } = req.body;
   const talker = await requestReadJson();
   const newId = talker[talker.length - 1].id + 1;
@@ -65,8 +65,8 @@ app.post('/talker', tokenValidate, personValidate, talkValidate,
   res.status(201).json(newPerson);
 });
 
-app.put('/talker/:id', tokenValidate, personValidate, talkValidate,
- rateAndDateValidate, async (req, res) => {
+app.put('/talker/:id', tokenValidate, personValidate, talkValidate, watchedAtValidate,
+ rateValidate, async (req, res) => {
   const { id } = req.params;
   const { name, age, talk } = req.body;
   const talker = await requestReadJson();
@@ -77,4 +77,15 @@ app.put('/talker/:id', tokenValidate, personValidate, talkValidate,
   talker[Number(id) - 1].talk = talk;
   await writeJson(talker);
   return res.status(HTTP_OK_STATUS).json(talker[Number(id) - 1]);
+});
+
+app.delete('/talker/:id', tokenValidate, async (req, res) => {
+  const talker = await requestReadJson();
+  const { id } = req.params;
+
+  const deletePerson = talker.filter((del) => del.id !== Number(id));
+
+  console.log(deletePerson);
+  await writeJson(deletePerson);
+  return res.status(204).end();
 });
