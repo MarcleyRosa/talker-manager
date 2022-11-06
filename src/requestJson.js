@@ -64,7 +64,6 @@ const watchedAtValidate = (req, res, next) => {
     const validDate = regexTalk.test(watchedAt);
     // const validate = (key, message) => {
     //     if (!key) return response(message);
-    //     console.log(key);
     // };
     // validate(rate, 'O campo "rate" é obrigatório');
     // validate(watchedAt, 'O campo "watchedAt" é obrigatório');

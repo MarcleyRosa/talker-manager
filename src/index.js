@@ -11,7 +11,6 @@ app.use(bodyParser.json());
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
 
-// não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
@@ -24,6 +23,22 @@ app.get('/talker', async (_req, res) => {
   const talker = await requestReadJson();
 
   return res.status(HTTP_OK_STATUS).json(talker);
+});
+
+app.get('/talker/search', tokenValidate, async (req, res) => {
+  try {
+  const { q } = req.query;
+  const talker = await requestReadJson();
+
+  if (q) {
+    const serach = talker.filter((tal) => tal.name.includes(q));
+    res.status(200).json(serach);
+  } else {
+    res.status(200).json(talker);
+  }
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
 });
 
 app.get('/talker/:id', async (req, res) => {
@@ -85,7 +100,15 @@ app.delete('/talker/:id', tokenValidate, async (req, res) => {
 
   const deletePerson = talker.filter((del) => del.id !== Number(id));
 
-  console.log(deletePerson);
   await writeJson(deletePerson);
   return res.status(204).end();
+});
+
+app.use((err, _req, _res, next) => {
+  console.error(err.stack);
+  next(err);
+});
+
+app.use((err, _req, res, _next) => {
+  res.status(500).json({ message: `Algo deu errado! Mensagem: ${err.message}` });
 });
