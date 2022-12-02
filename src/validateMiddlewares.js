@@ -62,13 +62,16 @@ const watchedAtValidate = (req, res, next) => {
     const response = (message) => res.status(400).send({ message });
     const regexTalk = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
     const validDate = regexTalk.test(watchedAt);
+
     // const validate = (key, message) => {
-    //     if (!key) return response(message);
+    //   if (!key) {
+    //     return res.status(400).send({ message });
+    //   }
     // };
-    // validate(rate, 'O campo "rate" é obrigatório');
-    // validate(watchedAt, 'O campo "watchedAt" é obrigatório');
-    // validate(validDate, 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
-    // validate(rateValid, 'O campo "rate" deve ser um inteiro de 1 à 5');
+    // return validate(watchedAt, 'O campo "watchedAt" é obrigatório') ||
+    // validate(validDate, 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"')
+    // || next();
+
     if (!watchedAt) return response('O campo "watchedAt" é obrigatório');
     if (!validDate) return response('O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
     return next();

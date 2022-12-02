@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const { requestReadJson, validation, tokenValidate, personValidate,
-   watchedAtValidate, writeJson, rateValidate, talkValidate } = require('./requestJson');
+   watchedAtValidate, writeJson, rateValidate, talkValidate } = require('./validateMiddlewares');
 
 const app = express();
 app.use(express.json());
