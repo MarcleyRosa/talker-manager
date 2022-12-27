@@ -4,10 +4,10 @@ const path = require('path');
 const route = path.resolve(__dirname, './talker.json');
 
 const requestReadJson = async () => {
-    const response = await fs.readFile(route, 'utf-8');
-    const responseParse = JSON.parse(response);
+  const response = await fs.readFile(route, 'utf-8');
+  const responseParse = JSON.parse(response);
 
-    return responseParse;
+  return responseParse;
 };
 
 const writeJson = async (newPerson) => {
@@ -15,34 +15,33 @@ const writeJson = async (newPerson) => {
 };
 
 const validation = (req, res, next) => {
-    const { email, password } = req.body;
-    const regex = /^\S+@\S+\.\S+$/;
-    const validEmail = regex.test(email);
-    if (email === undefined) {
-     return res.status(400).json({ message: 'O campo "email" é obrigatório' });
-    }
-    if (password === undefined) {
-      return res.status(400).json({ message: 'O campo "password" é obrigatório' });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
-    }
-    if (!validEmail) {
-      return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
-    }
-    return next();
+  const { email, password } = req.body;
+  const regex = /^\S+@\S+\.\S+$/;
+  const validEmail = regex.test(email);
+  if (email === undefined) {
+    return res.status(400).json({ message: 'O campo "email" é obrigatório' });
+  }
+  if (password === undefined) {
+    return res.status(400).json({ message: 'O campo "password" é obrigatório' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
+  }
+  if (!validEmail) {
+    return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
+  }
+  return next();
   };
 
 const tokenValidate = (req, res, next) => {
-  //  const response = (message) => res.status(400).send({ message });
-   const { headers: { authorization } } = req;
-   if (!authorization) {
-    return res.status(401).send({ message: 'Token não encontrado' });
-   }
-   if (authorization.length < 16 && authorization !== String) {
-    return res.status(401).send({ message: 'Token inválido' });
-   }
-   next();
+  const { headers: { authorization } } = req;
+  if (!authorization) {
+  return res.status(401).send({ message: 'Token não encontrado' });
+  }
+  if (authorization.length < 16 && authorization !== String) {
+  return res.status(401).send({ message: 'Token inválido' });
+  }
+  next();
 };
 
 const personValidate = (req, res, next) => {
@@ -58,23 +57,14 @@ const personValidate = (req, res, next) => {
 };
 
 const watchedAtValidate = (req, res, next) => {
-    const { talk: { watchedAt } } = req.body;
-    const response = (message) => res.status(400).send({ message });
-    const regexTalk = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
-    const validDate = regexTalk.test(watchedAt);
+  const { talk: { watchedAt } } = req.body;
+  const response = (message) => res.status(400).send({ message });
+  const regexTalk = /^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/i;
+  const validDate = regexTalk.test(watchedAt);
 
-    // const validate = (key, message) => {
-    //   if (!key) {
-    //     return res.status(400).send({ message });
-    //   }
-    // };
-    // return validate(watchedAt, 'O campo "watchedAt" é obrigatório') ||
-    // validate(validDate, 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"')
-    // || next();
-
-    if (!watchedAt) return response('O campo "watchedAt" é obrigatório');
-    if (!validDate) return response('O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
-    return next();
+  if (!watchedAt) return response('O campo "watchedAt" é obrigatório');
+  if (!validDate) return response('O campo "watchedAt" deve ter o formato "dd/mm/aaaa"');
+  return next();
 };
 
 const rateValidate = (req, res, next) => {

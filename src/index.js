@@ -20,9 +20,13 @@ app.listen(PORT, () => {
 });
 
 app.get('/talker', async (_req, res) => {
-  const talker = await requestReadJson();
+  try {
+    const talker = await requestReadJson();
 
-  return res.status(HTTP_OK_STATUS).json(talker);
+    return res.status(HTTP_OK_STATUS).json(talker);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 app.get('/talker/search', tokenValidate, async (req, res) => {
@@ -54,10 +58,14 @@ app.get('/talker/:id', async (req, res) => {
 });
 
 app.post('/login', validation, (_req, res) => {
-  const token = crypto.randomBytes(8).toString('hex');
+  try {
+    const token = crypto.randomBytes(8).toString('hex');
 
-  res.header({ authorization: token });
-  return res.status(HTTP_OK_STATUS).json({ token });
+    res.header({ authorization: token });
+    return res.status(HTTP_OK_STATUS).json({ token });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 app.post('/talker', tokenValidate, personValidate, talkValidate, watchedAtValidate,
@@ -82,26 +90,34 @@ app.post('/talker', tokenValidate, personValidate, talkValidate, watchedAtValida
 
 app.put('/talker/:id', tokenValidate, personValidate, talkValidate, watchedAtValidate,
  rateValidate, async (req, res) => {
-  const { id } = req.params;
-  const { name, age, talk } = req.body;
-  const talker = await requestReadJson();
+  try {
+    const { id } = req.params;
+    const { name, age, talk } = req.body;
+    const talker = await requestReadJson();
 
-  talker[Number(id) - 1].id = Number(id);
-  talker[Number(id) - 1].name = name;
-  talker[Number(id) - 1].age = age;
-  talker[Number(id) - 1].talk = talk;
-  await writeJson(talker);
-  return res.status(HTTP_OK_STATUS).json(talker[Number(id) - 1]);
+    talker[Number(id) - 1].id = Number(id);
+    talker[Number(id) - 1].name = name;
+    talker[Number(id) - 1].age = age;
+    talker[Number(id) - 1].talk = talk;
+    await writeJson(talker);
+    return res.status(HTTP_OK_STATUS).json(talker[Number(id) - 1]);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 app.delete('/talker/:id', tokenValidate, async (req, res) => {
-  const talker = await requestReadJson();
-  const { id } = req.params;
+  try {
+    const talker = await requestReadJson();
+    const { id } = req.params;
 
-  const deletePerson = talker.filter((del) => del.id !== Number(id));
+    const deletePerson = talker.filter((del) => del.id !== Number(id));
 
-  await writeJson(deletePerson);
-  return res.status(204).end();
+    await writeJson(deletePerson);
+    return res.status(204).end();
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 app.use((err, _req, _res, next) => {
